@@ -440,8 +440,9 @@ class ClickHouseAdapter(SQLAdapter):
         if relations is not None:
             relations.append(relation)
 
-    def drop_relation(self, relation):
-        super().drop_relation(relation)
+    @available.parse_none
+    def unregister_staging_relation(self, relation: BaseRelation) -> None:
+        """Call after the materialization dropped the relation itself."""
         relations = getattr(self._staging, 'relations', None)
         if relations and relation in relations:
             relations.remove(relation)

@@ -32,12 +32,24 @@ def test_post_model_hook_drops_relation_left_by_failed_model(adapter):
 def test_post_model_hook_does_nothing_after_materialization_dropped_relation(adapter):
     context = adapter.pre_model_hook({})
     adapter.register_staging_relation(staging_relation())
+    adapter.unregister_staging_relation(staging_relation())
+
+    with patch.object(SQLAdapter, 'drop_relation') as drop:
+        adapter.post_model_hook({}, context)
+
+    drop.assert_not_called()
+
+
+def test_drop_before_create_keeps_registration(adapter):
+    # create_distributed_local_table drops the shard relation before creating it
+    context = adapter.pre_model_hook({})
+    adapter.register_staging_relation(staging_relation())
 
     with patch.object(SQLAdapter, 'drop_relation') as drop:
         adapter.drop_relation(staging_relation())
         adapter.post_model_hook({}, context)
 
-    drop.assert_called_once()
+    assert drop.call_count == 2
 
 
 def test_post_model_hook_does_not_raise_when_drop_fails(adapter):

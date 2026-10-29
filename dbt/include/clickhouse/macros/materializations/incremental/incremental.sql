@@ -245,6 +245,7 @@
         insert into {{ existing_relation }} select {{ dest_cols_csv }} from {{ inserting_relation }} {{ adapter.get_model_query_settings(model) }}
     {% endcall %}
     {% do adapter.drop_relation(new_data_relation) %}
+    {% do adapter.unregister_staging_relation(new_data_relation) %}
     {{ drop_relation_if_exists(distributed_new_data_relation) }}
 {% endmacro %}
 
@@ -307,4 +308,5 @@
 
     {% do adapter.drop_relation(distributed_new_data_relation) %}
     {% do adapter.drop_relation(new_data_relation) %}
+    {% do adapter.unregister_staging_relation(new_data_relation) %}
 {% endmacro %}
